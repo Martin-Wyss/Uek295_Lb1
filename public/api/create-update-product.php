@@ -4,13 +4,17 @@ use ReallySimpleJWT\Token;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
 use OpenApi\Attributes as OAT;
+
+/**
+ * Erstellt oder aktualisiert ein Produkt anhand seiner SKU.
+ */
 class CreateUpdateProductController
 {
 
     #[OAT\Put(
         path: '/api/v1/product/{sku}',
         summary: 'Erstellt oder aktualisiert ein Produkt anhand seiner SKU.',
-        tags: ['create-update-pro'],
+        tags: ['product'],
         parameters: [
             new OAT\Parameter(
                 name: 'sku',
@@ -86,6 +90,14 @@ class CreateUpdateProductController
         ]
     )]
 
+    /**
+     * Prüft die Anmeldung und Eingaben und speichert die Produktdaten.
+     *
+     * @param Request $request Die eingehende HTTP-Anfrage.
+     * @param Response $response Die ausgehende HTTP-Antwort.
+     * @param array $args Die Parameter aus dem URL-Pfad.
+     * @return Response Die Produktdaten oder eine Fehlermeldung.
+     */
     public static function createUpdateProduct(Request $request, Response $response, $args)
     {
         global $config;
@@ -97,8 +109,10 @@ class CreateUpdateProductController
             return $response->withStatus(401);
         }
 
+        // Die SKU aus dem URL-Pfad übernehmen.
         $skuFromUrl = $args["sku"];
 
+        // Die SKU auf 1 bis 100 Zeichen prüfen.
         if (
             mb_strlen($skuFromUrl, "UTF-8") < 1 ||
             mb_strlen($skuFromUrl, "UTF-8") > 100
@@ -114,6 +128,7 @@ class CreateUpdateProductController
 
         $request_data = json_decode((string) $request->getBody(), true);
 
+        // Prüfen, ob diese vier Pflichtfelder vorhanden und nicht null sind.
         if (
             !isset(
             $request_data['active'],
@@ -130,6 +145,7 @@ class CreateUpdateProductController
                 ->withHeader("Content-Type", "application/json");
         }
 
+        // Werte übernehmen und für optionale Felder Standardwerte verwenden.
         $sku = $skuFromUrl;
         $name = trim($request_data['name']);
         $active = $request_data['active'];
@@ -139,6 +155,7 @@ class CreateUpdateProductController
         $price = $request_data['price'];
         $stock = $request_data['stock'];
 
+        // Die Kategorie-ID muss eine Ganzzahl oder null sein.
         if (!is_int($idCategory) && $idCategory !== null) {
             $response->getBody()->write(json_encode(
                 ["error" => "Muss eine nummer sein"]
@@ -148,6 +165,7 @@ class CreateUpdateProductController
                 ->withHeader("Content-Type", "application/json");
         }
 
+        // Eine mitgesendete Kategorie in der Datenbank suchen.
         if ($idCategory !== null) {
             $statement = $database->prepare("SELECT * FROM category WHERE category_id = ?");
             $statement->execute([$idCategory]);
@@ -171,6 +189,7 @@ class CreateUpdateProductController
             $description = trim($description);
         }
 
+        // Werte ausserhalb des Bereichs von 0 bis 1 ablehnen.
         if ($active > 1 || $active < 0) {
             $response->getBody()->write(json_encode(
                 ["error" => "active muss 0 oder 1 sein"]
@@ -180,6 +199,7 @@ class CreateUpdateProductController
                 ->withHeader("Content-Type", "application/json");
         }
 
+        // Die Namenslänge auf 1 bis 500 Zeichen prüfen.
         if (strlen($name) > 500 || strlen($name) < 1) {
             $response->getBody()->write(json_encode(
                 ["error" => "Kein Name oder zu viele Zeichen"]
@@ -189,7 +209,7 @@ class CreateUpdateProductController
                 ->withHeader("Content-Type", "application/json");
         }
 
-
+        // Die Länge des Bildwerts auf maximal 1000 Zeichen prüfen.
         if ($image !== null && mb_strlen($image, "UTF-8") > 1000) {
             $response->getBody()->write(json_encode(
                 ["error" => "Image darf maximal 1000 Zeichen enthalten"]
@@ -200,6 +220,7 @@ class CreateUpdateProductController
                 ->withHeader("Content-Type", "application/json");
         }
 
+        // Eine angegebene Kategorie-ID auf den positiven INTEGER-Bereich prüfen.
         if (
             $idCategory !== null &&
             ($idCategory < 1 || $idCategory > 2147483647)
@@ -213,7 +234,7 @@ class CreateUpdateProductController
                 ->withHeader("Content-Type", "application/json");
         }
 
-        // Preis entsprechend DECIMAL(65,2) prüfen.
+        // Preis entsprechend prüfen.
         if ($price < 0 || $price >= 1e63 || round($price, 2) != $price) {
             $response->getBody()->write(json_encode(
                 ["error" => "Ungültiger Preis oder mehr als zwei Nachkommastellen"]
@@ -224,6 +245,7 @@ class CreateUpdateProductController
                 ->withHeader("Content-Type", "application/json");
         }
 
+        // Den Lagerbestand in einem vorgegebenen Bereich prüfen.
         if ($stock < 0 || $stock > 2147483647) {
             $response->getBody()->write(json_encode(
                 ["error" => "Ungültiger Lagerbestand"]

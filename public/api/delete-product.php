@@ -6,35 +6,35 @@ use Slim\Psr7\Response;
 use OpenApi\Attributes as OAT;
 
 /**
- * Löscht eine Kategorie anhand ihrer ID.
+ * Löscht ein Produkt anhand seiner SKU.
  */
-class DeleteCategoryController
+class DeleteProductController
 {
 
     #[OAT\Delete(
-        path: '/api/v1/category/{category_id}',
-        summary: 'Die Kategorie von der angegebenen ID wird gelöscht',
-        tags: ['category'],
+        path: '/api/v1/product/{sku}',
+        summary: 'Das Produkt von der angegebenen sku wird gelöscht',
+        tags: ['product'],
         parameters: [
             new OAT\Parameter(
-                name: 'category_id',
+                name: 'sku',
                 in: 'path',
                 required: true,
-                description: 'ID der gewünschten Kategorie',
+                description: 'sku des zu löschenden Produkts',
                 schema: new OAT\Schema(
-                    type: 'integer',
-                    example: '1'
+                    type: 'string',
+                    example: '12345678'
                 )
             )
         ],
         responses: [
             new OAT\Response(
                 response: 204,
-                description: 'Kategorie gelöscht.'
+                description: 'Produkt gelöscht.'
             ),
             new OAT\Response(
                 response: 400,
-                description: 'Ungültige Kategorie ID.'
+                description: 'Ungültige sku.'
             ),
             new OAT\Response(
                 response: 401,
@@ -42,20 +42,20 @@ class DeleteCategoryController
             ),
             new OAT\Response(
                 response: 404,
-                description: 'Kategorie nicht gefunden.'
+                description: 'Produkt nicht gefunden.'
             )
         ]
     )]
 
     /**
-     * Prüft die Anmeldung und ID und löscht die Kategorie.
+     * Prüft die Anmeldung und SKU und löscht das Produkt.
      *
      * @param Request $request Die eingehende HTTP-Anfrage.
      * @param Response $response Die ausgehende HTTP-Antwort.
      * @param array $args Die Parameter aus dem URL-Pfad.
      * @return Response Eine leere Erfolgsantwort oder eine Fehlermeldung.
      */
-    public static function deleteCategory(Request $request, Response $response, $args)
+    public static function deleteProduct(Request $request, Response $response, $args)
     {
         global $config;
         global $database;
@@ -66,18 +66,12 @@ class DeleteCategoryController
             return $response->withStatus(401);
         }
 
-        $categoryId = $args["category_id"];
+        // SKU aus der URL auslesen und prüfen.
+        $sku = trim($args["sku"]);
 
-        // Die ID auf eine positive Ganzzahl im INTEGER-Bereich prüfen.
-        $categoryId = filter_var(
-            $args["category_id"],
-            FILTER_VALIDATE_INT,
-            ["options" => ["min_range" => 1, "max_range" => 2147483647]]
-        );
-
-        if ($categoryId === false) {
+        if (mb_strlen($sku, "UTF-8") < 1 || mb_strlen($sku, "UTF-8") > 100) {
             $response->getBody()->write(json_encode(
-                ["error" => "Ungültige Kategorie ID"]
+                ["error" => "SKU muss zwischen 1 und 100 Zeichen enthalten"]
             ));
 
             return $response
@@ -85,14 +79,14 @@ class DeleteCategoryController
                 ->withHeader("Content-Type", "application/json");
         }
 
-        $statement = $database->prepare("DELETE FROM category WHERE category_id = ?");
-        $statement->execute([$categoryId]);
+        $statement = $database->prepare("DELETE FROM product WHERE sku = ?");
+        $statement->execute([$sku]);
 
 
-        // Ohne gelöschte Zeile war die Kategorie nicht vorhanden.
+        // Ohne gelöschte Zeile war das Produkt nicht vorhanden.
         if ($statement->affected_rows === 0) {
             $response->getBody()->write(json_encode(
-                ["error" => "Kategorie nicht gefunden"]
+                ["error" => "Produkt nicht gefunden"]
             ));
 
             return $response

@@ -6,20 +6,20 @@ use Slim\Psr7\Response;
 use OpenApi\Attributes as OAT;
 
 /**
- * Listet alle Kategorien aus der Datenbank auf.
+ * Listet alle Produkte aus der Datenbank auf.
  */
-class ListCategoriesController
+class ListProductsController
 {
 
     #[OAT\Get(
-        path: '/api/v1/categories',
-        summary: 'Listet alle Kategorien auf',
-        tags: ['category'],
+        path: '/api/v1/products',
+        summary: 'Listet alle Produkte auf',
+        tags: ['product'],
 
         responses: [
             new OAT\Response(
                 response: 200,
-                description: 'Listet alle Kategorien auf'
+                description: 'Listet alle Produkte auf.'
             ),
             new OAT\Response(
                 response: 401,
@@ -29,13 +29,13 @@ class ListCategoriesController
     )]
 
     /**
-     * Prüft die Anmeldung und gibt alle Kategorien zurück.
+     * Prüft die Anmeldung und gibt alle Produkte zurück.
      *
      * @param Request $request Die eingehende HTTP-Anfrage.
      * @param Response $response Die ausgehende HTTP-Antwort.
-     * @return Response Die Kategorien als JSON-Array oder Status 401.
+     * @return Response Die Produkte als JSON-Array oder Status 401.
      */
-    public static function listCategories(Request $request, Response $response)
+    public static function listProducts(Request $request, Response $response)
     {
 
         global $config;
@@ -48,13 +48,13 @@ class ListCategoriesController
         }
 
 
-        $statement = $database->prepare("SELECT * FROM category");
+        $statement = $database->prepare("SELECT * FROM product");
         $statement->execute();
 
         $result = $statement->get_result();
-        $categories = $result->fetch_all(MYSQLI_ASSOC);
+        $products = $result->fetch_all(MYSQLI_ASSOC);
 
-        $response->getBody()->write(json_encode($categories));
+        $response->getBody()->write(json_encode($products));
 
         return $response
             ->withStatus(200)

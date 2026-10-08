@@ -4,13 +4,17 @@ use ReallySimpleJWT\Token;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
 use OpenApi\Attributes as OAT;
+
+/**
+ * Aktualisiert eine Kategorie anhand ihrer ID.
+ */
 class UpdateCategoryController
 {
 
     #[OAT\Patch(
         path: '/api/v1/category/{category_id}',
         summary: 'Aktualisiert eine Kategorie anhand der ID',
-        tags: ['update-cat'],
+        tags: ['category'],
         parameters: [
             new OAT\Parameter(
                 name: 'category_id',
@@ -62,7 +66,14 @@ class UpdateCategoryController
     )]
 
 
-
+    /**
+     * Prüft die Anmeldung und Eingaben und aktualisiert die Kategorie.
+     *
+     * @param Request $request Die eingehende HTTP-Anfrage.
+     * @param Response $response Die ausgehende HTTP-Antwort.
+     * @param array $args Die Parameter aus dem URL-Pfad.
+     * @return Response Die aktualisierte Kategorie oder eine Fehlermeldung.
+     */
     public static function updateCategory(Request $request, Response $response, $args)
     {
         global $config;
@@ -74,7 +85,7 @@ class UpdateCategoryController
             return $response->withStatus(401);
         }
 
-
+        // Die ID auf eine positive Ganzzahl im INTEGER-Bereich prüfen.
         $categoryId = filter_var(
             $args["category_id"],
             FILTER_VALIDATE_INT,
@@ -93,6 +104,7 @@ class UpdateCategoryController
 
         $request_data = json_decode((string) $request->getBody(), true);
 
+        // Prüfen, ob beide Pflichtfelder vorhanden und nicht null sind.
         if (!isset($request_data['name'], $request_data['active'])) {
             $response->getBody()->write(json_encode(
                 ["error" => "JSON pflichtfelder fehlen"]
@@ -105,6 +117,7 @@ class UpdateCategoryController
         $name = trim($request_data['name']);
         $active = $request_data['active'];
 
+        // Werte ausserhalb des Bereichs von 0 bis 1 ablehnen.
         if ($active > 1 || $active < 0) {
             $response->getBody()->write(json_encode(
                 ["error" => "Keine gültige nummer!"]
@@ -114,6 +127,7 @@ class UpdateCategoryController
                 ->withHeader("Content-Type", "application/json");
         }
 
+        // Die Namenslänge auf 1 bis 500 Zeichen prüfen.
         if (strlen($name) > 500 || strlen($name) < 1) {
             $response->getBody()->write(json_encode(
                 ["error" => "Kein Name oder zu viele Zeichen"]
@@ -130,6 +144,7 @@ class UpdateCategoryController
         $result = $statement->get_result();
         $category = $result->fetch_assoc();
 
+        // Ohne Treffer mit Status 404 antworten.
         if ($category === null) {
             $response->getBody()->write(json_encode(
                 ["error" => "Kategorie nicht gefunden"]
