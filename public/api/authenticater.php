@@ -3,9 +3,9 @@ use OpenApi\Attributes as OAT;
 use ReallySimpleJWT\Token;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
-class authenticater
-{
- #[OAT\Post(
+class authenticater{
+ 
+#[OAT\Post(
         path: '/api/v1/authenticate',
         summary: 'Wird Anhand vom Benutzernamen und Passwort authentifizert',
         tags: ['auth'],
@@ -22,7 +22,7 @@ class authenticater
                     new OAT\Property(
                         property: 'password',
                         type: 'string',
-                        example: 'hALo'
+                        example: 'hAlLoWelT'
                     )
                 ]
             )
@@ -38,8 +38,7 @@ class authenticater
             )
         ]
     )]
-    public static function autenticate(Request $request, Response $response, $args)
-    {
+    public static function authenticate(Request $request, Response $response, $args){
         global $config;
         $requestBody = $request->getParsedBody();
 
@@ -49,9 +48,9 @@ class authenticater
             return $response->withStatus(401, "Invalid credentials");
         }
 
-        //Generate token
+        //Generiert ein token
         $token = Token::create($config["username"], $config["password"], time() + 3600, "localhost");
-        //Return token as cookie
+        //gibt das token als cookie zurück
         setcookie("token", $token, time() + 3600);
 
         $response = $response->withHeader("content-type", "applcation/json");
