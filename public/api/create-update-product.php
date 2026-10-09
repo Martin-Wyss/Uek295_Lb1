@@ -126,15 +126,15 @@ class CreateUpdateProductController
                 ->withHeader("Content-Type", "application/json");
         }
 
-        $request_data = json_decode((string) $request->getBody(), true);
+        $requestData = json_decode((string) $request->getBody(), true);
 
         // Prüfen, ob diese vier Pflichtfelder vorhanden und nicht null sind.
         if (
             !isset(
-            $request_data['active'],
-            $request_data['name'],
-            $request_data['price'],
-            $request_data['stock']
+                $requestData['active'],
+                $requestData['name'],
+                $requestData['price'],
+                $requestData['stock']
         )
         ) {
             $response->getBody()->write(json_encode(
@@ -147,13 +147,13 @@ class CreateUpdateProductController
 
         // Werte übernehmen und für optionale Felder Standardwerte verwenden.
         $sku = $skuFromUrl;
-        $name = trim($request_data['name']);
-        $active = $request_data['active'];
-        $idCategory = $request_data['id_category'] ?? null;
-        $image = $request_data['image'] ?? "";
-        $description = $request_data['description'] ?? "";
-        $price = $request_data['price'];
-        $stock = $request_data['stock'];
+        $name = trim($requestData['name']);
+        $active = $requestData['active'];
+        $idCategory = $requestData['id_category'] ?? null;
+        $image = $requestData['image'] ?? "";
+        $description = $requestData['description'] ?? "";
+        $price = $requestData['price'];
+        $stock = $requestData['stock'];
 
         // Die Kategorie-ID muss eine Ganzzahl oder null sein.
         if (!is_int($idCategory) && $idCategory !== null) {

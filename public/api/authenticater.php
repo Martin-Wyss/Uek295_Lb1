@@ -7,7 +7,7 @@ use Slim\Psr7\Response;
 /**
  * Prüft die Zugangsdaten und erstellt ein JWT für die Anmeldung.
  */
-class authenticater
+class Authenticator
 {
 
     #[OAT\Post(
@@ -59,7 +59,7 @@ class authenticater
 
         // Benutzername und Passwort mit der Konfiguration vergleichen.
         if ($requestBody["username"] != $config["username"] || $requestBody["password"] != $config["password"]) {
-            //return error
+            
             return $response->withStatus(401, "Invalid credentials");
         }
 
@@ -68,7 +68,7 @@ class authenticater
         //gibt das token als cookie zurück
         setcookie("token", $token, time() + 3600);
 
-        $response = $response->withHeader("content-type", "applcation/json");
+        $response = $response->withHeader("content-type", "application/json");
         $response->getBody()->write(json_encode(["success" => true]));
         return $response->withStatus(200);
     }

@@ -32,34 +32,34 @@ $app->addBodyParsingMiddleware();
 $database = new mysqli("localhost", "root", "", "uek295_lb01");
 
 // Die Route für die Anmeldung registrieren.
-$app->post("/authenticate", [authenticater::class, "authenticate"]);
+$app->post("/authenticate", [Authenticator::class, "authenticate"]);
 
 // Die Route zum Erstellen einer Kategorie registrieren.
-$app->post("/category", [CreateCategoryController::class,"createCategory"]);
+$app->post("/category", [CreateCategoryController::class, "createCategory"]);
 
 // Eine Kategorie anhand ihrer ID lesen.
-$app->get("/category/{category_id}", [GetCategoryController::class,"getCategory"]);
+$app->get("/category/{category_id}", [GetCategoryController::class, "getCategory"]);
 
 // Eine Kategorie anhand ihrer ID löschen.
-$app->delete("/category/{category_id}", [DeleteCategoryController::class,"deleteCategory"]);
+$app->delete("/category/{category_id}", [DeleteCategoryController::class, "deleteCategory"]);
 
 // Alle Kategorien auflisten.
-$app->get("/categories", [ListCategoriesController::class,"listCategories"]);
+$app->get("/categories", [ListCategoriesController::class, "listCategories"]);
 
 // Eine Kategorie anhand ihrer ID aktualisieren.
-$app->patch("/category/{category_id}", [UpdateCategoryController::class,"updateCategory"]);
+$app->patch("/category/{category_id}", [UpdateCategoryController::class, "updateCategory"]);
 
 // Ein Produkt anhand seiner SKU erstellen oder aktualisieren.
-$app->put("/product/{sku}", [CreateUpdateProductController::class,"createUpdateProduct"]);
+$app->put("/product/{sku}", [CreateUpdateProductController::class, "createUpdateProduct"]);
 
 // Ein Produkt anhand seiner SKU lesen.
-$app->get("/product/{sku}", [GetProductController::class,"getProduct"]);
+$app->get("/product/{sku}", [GetProductController::class, "getProduct"]);
 
 // Ein Produkt anhand seiner SKU löschen.
-$app->delete("/product/{sku}", [DeleteProductController::class,"deleteProduct"]);
+$app->delete("/product/{sku}", [DeleteProductController::class, "deleteProduct"]);
 
 // Alle Produkte auflisten.
-$app->get("/products", [ListProductsController::class,"listProducts"]);
+$app->get("/products", [ListProductsController::class, "listProducts"]);
 
 // Die Anfrage von Slim verarbeiten lassen.
 $app->run();

@@ -102,10 +102,10 @@ class UpdateCategoryController
                 ->withHeader("Content-Type", "application/json");
         }
 
-        $request_data = json_decode((string) $request->getBody(), true);
+        $requestData = json_decode((string) $request->getBody(), true);
 
         // Prüfen, ob beide Pflichtfelder vorhanden und nicht null sind.
-        if (!isset($request_data['name'], $request_data['active'])) {
+        if (!isset($requestData['name'], $requestData['active'])) {
             $response->getBody()->write(json_encode(
                 ["error" => "JSON pflichtfelder fehlen"]
             ));
@@ -114,8 +114,8 @@ class UpdateCategoryController
                 ->withHeader("Content-Type", "application/json");
         }
 
-        $name = trim($request_data['name']);
-        $active = $request_data['active'];
+        $name = trim($requestData['name']);
+        $active = $requestData['active'];
 
         // Werte ausserhalb des Bereichs von 0 bis 1 ablehnen.
         if ($active > 1 || $active < 0) {
